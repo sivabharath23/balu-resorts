@@ -1,6 +1,8 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
+import single1 from '../assets/Single Bed Room 1.jpg';
+import doubleRoom1 from '../assets/Double Bed Room 1.jpg';
 import {
   Wind, Flame, Eye, UtensilsCrossed, Star, ArrowRight,
   TreePine, Waves, Sun, Moon, MapPin, ChevronDown, Compass
@@ -200,57 +202,89 @@ export default function Home() {
           </div>
         </div>
       </section>
+{/* ───── COTTAGES PREVIEW ───── */}
+<section className="py-24 px-6 bg-forest-900 text-white relative overflow-hidden">
+  <div className="absolute inset-0 opacity-10">
+    <div className="absolute top-10 left-10 w-72 h-72 bg-forest-400 rounded-full blur-3xl" />
+    <div className="absolute bottom-10 right-10 w-96 h-96 bg-earth-400 rounded-full blur-3xl" />
+  </div>
 
-      {/* ───── COTTAGES PREVIEW ───── */}
-      <section className="py-24 px-6 bg-forest-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-72 h-72 bg-forest-400 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-earth-400 rounded-full blur-3xl" />
-        </div>
-        <div className="relative max-w-7xl mx-auto">
-          <AnimatedSection className="text-center mb-16">
-            <p className="font-accent italic text-earth-300 text-lg mb-3">Rest in nature</p>
-            <h2 className="font-display text-4xl md:text-5xl text-white mb-5">Our Cottages</h2>
-            <p className="text-forest-300 max-w-xl mx-auto">Thoughtfully designed retreats blending rustic charm with modern comfort.</p>
-          </AnimatedSection>
+  <div className="relative max-w-7xl mx-auto">
+    <AnimatedSection className="text-center mb-16">
+      <p className="font-accent italic text-earth-300 text-lg mb-3">Rest in nature</p>
+      <h2 className="font-display text-4xl md:text-5xl text-white mb-5">Our Cottages</h2>
+      <p className="text-forest-300 max-w-xl mx-auto">
+        Thoughtfully designed retreats blending rustic charm with modern comfort.
+      </p>
+    </AnimatedSection>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {[
-              { name: 'Forest Cottage', price: '₹2,500', guests: '2', tag: 'Most Popular' },
-              { name: 'Valley View Suite', price: '₹3,800', guests: '4', tag: 'Best Views' },
-              { name: 'Family Bungalow', price: '₹5,500', guests: '6+', tag: 'Family Pick' },
-            ].map(({ name, price, guests, tag }, i) => (
-              <motion.div
-                key={name}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                className="glass-dark p-6 group hover:border-earth-400/40 transition-all duration-300"
-              >
-                {/* Cottage illustration placeholder */}
-                <div className="w-full h-44 rounded-xl bg-gradient-to-br from-forest-700 to-forest-800 mb-5 flex items-center justify-center relative overflow-hidden">
-                  <TreePine className="w-16 h-16 text-forest-500" />
-                  <span className="absolute top-3 right-3 bg-earth-500 text-white text-xs font-medium px-3 py-1 rounded-full">{tag}</span>
-                </div>
-                <h3 className="font-display text-xl mb-1">{name}</h3>
-                <p className="text-forest-400 text-sm mb-4">Up to {guests} guests</p>
-                <div className="flex items-center justify-between">
-                  <span className="font-display text-2xl text-earth-300">{price}<span className="text-sm text-forest-400 font-body">/night</span></span>
-                  <Link to="/booking" className="btn-secondary text-xs py-2 px-4">Book <ArrowRight className="w-4 h-4" /></Link>
-                </div>
-              </motion.div>
-            ))}
+    <div className="grid md:grid-cols-2 gap-6 mb-12">   {/* Changed to 2 columns */}
+      {[
+        {
+          name: 'Single Bedroom',
+          price: '₹3,000',
+          guests: '2',
+          tag: 'Most Popular',
+          image: single1,                    // Your real image
+        },
+        {
+          name: 'Double Bedroom',
+          price: '₹6,000',
+          guests: '6',
+          tag: 'Best Choice',
+          image: doubleRoom1,                // Your real image
+        },
+      ].map(({ name, price, guests, tag, image }, i) => (
+        <motion.div
+          key={name}
+          custom={i}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUp}
+          className="glass-dark p-6 group hover:border-earth-400/40 transition-all duration-300"
+        >
+          {/* Image with Fixed Height - Same pattern as your original */}
+          <div className="w-full h-60 md:h-72 rounded-xl overflow-hidden relative mb-5">
+            <img
+              src={image}
+              alt={name}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            
+            {/* Tag Badge - Same position as your original */}
+            <span className="absolute top-3 right-3 bg-earth-500 text-white text-xs font-medium px-3 py-1 rounded-full">
+              {tag}
+            </span>
           </div>
 
-          <div className="text-center">
-            <Link to="/cottages" className="btn-outline">
-              View All Cottages <ArrowRight className="w-4 h-4" />
+          <h3 className="font-display text-xl mb-1">{name}</h3>
+          <p className="text-forest-400 text-sm mb-4">Up to {guests} guests</p>
+
+          <div className="flex items-center justify-between">
+            <span className="font-display text-2xl text-earth-300">
+              {price}
+              <span className="text-sm text-forest-400 font-body">/night</span>
+            </span>
+            
+            <Link 
+              to={`/booking?room=${encodeURIComponent(name)}&price=${price.replace(/[₹,]/g, '')}`}
+              className="btn-secondary text-xs py-2 px-4"
+            >
+              Book <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-        </div>
-      </section>
+        </motion.div>
+      ))}
+    </div>
+
+    <div className="text-center">
+      <Link to="/cottages" className="btn-outline">
+        View All Cottages <ArrowRight className="w-4 h-4" />
+      </Link>
+    </div>
+  </div>
+</section>
 
       {/* ───── EXPLORE KOLLI HILLS ───── */}
       <section className="py-24 px-6 bg-mist leaf-pattern">
