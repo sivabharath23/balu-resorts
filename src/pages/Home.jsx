@@ -223,7 +223,7 @@ export default function Home() {
         {
           name: 'Single Bedroom',
           price: '₹3,000',
-          guests: '2',
+          guests: '3',
           tag: 'Most Popular',
           image: single1,                    // Your real image
         },

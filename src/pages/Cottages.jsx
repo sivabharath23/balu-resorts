@@ -15,7 +15,7 @@ const rooms = [
     type: 'Standard',
     price: 3000,
     originalPrice: 3500,
-    guests: 2,
+    guests: 3,
     beds: 1,
     size: '350 sq ft',
     tag: 'Most Popular',
