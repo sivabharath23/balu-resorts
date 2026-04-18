@@ -11,7 +11,7 @@ import bathroom from '../assets/Bathroom.jpg';
 import doubleRoom1 from '../assets/Double Bed Room 1.jpg';
 import doubleRoom2 from '../assets/Double Bed Room 2.jpg';
 import outer1 from '../assets/Outer view 1.jpg';
-import outer2 from '../assets/Outer view 2.jpg';
+import outer2 from '../assets/outer view 2.jpg';
 import outer3 from '../assets/Outer view 3.jpg';
 import single1 from '../assets/Single Bed Room 1.jpg';
 
