@@ -1,20 +1,141 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Search, CheckCircle2, XCircle, Trash2, RefreshCw, ChevronLeft, ChevronRight, FilterX } from 'lucide-react';
+import { Search, CheckCircle2, XCircle, Trash2, RefreshCw, ChevronLeft, ChevronRight, FilterX, Eye, Calendar } from 'lucide-react';
 import api from '../../utils/api';
+import { toast } from 'react-hot-toast';
 
-function StatusBadge({ status }) {
-  const styles = {
+function StatusBadge({ status, type = 'booking' }) {
+  const bookingStyles = {
     pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
     approved: 'bg-green-100 text-green-700 border-green-200',
     rejected: 'bg-red-100 text-red-700 border-red-200',
+    cancelled: 'bg-gray-100 text-gray-700 border-gray-200',
+  };
+  
+  const paymentStyles = {
+    pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
     paid: 'bg-blue-100 text-blue-700 border-blue-200',
     failed: 'bg-red-100 text-red-600 border-red-200',
+    refunded: 'bg-purple-100 text-purple-700 border-purple-200',
   };
+  
+  const styles = type === 'payment' ? paymentStyles : bookingStyles;
   return (
     <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize border ${styles[status] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
       {status}
     </span>
+  );
+}
+
+function BookingDetailsModal({ booking, onClose }) {
+  if (!booking) return null;
+
+  const nights = Math.ceil(
+    (new Date(booking.checkOut).setHours(0, 0, 0, 0) -
+      new Date(booking.checkIn).setHours(0, 0, 0, 0)) /
+    (1000 * 60 * 60 * 24)
+  );
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-96 overflow-y-auto"
+      >
+        <div className="sticky top-0 bg-forest-900 text-white p-6 flex items-center justify-between border-b border-forest-800">
+          <h2 className="font-display text-2xl">Booking #{booking.id}</h2>
+          <button onClick={onClose} className="text-2xl leading-none hover:opacity-70">×</button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-xs font-semibold text-forest-500 uppercase mb-3">Guest Information</h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-forest-500 mb-1">Name</p>
+                  <p className="font-semibold text-forest-900">{booking.name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-forest-500 mb-1">Phone</p>
+                  <p className="font-semibold text-forest-900"><a href={`tel:${booking.phone}`} className="hover:text-forest-600">{booking.phone}</a></p>
+                </div>
+                <div>
+                  <p className="text-xs text-forest-500 mb-1">Email</p>
+                  <p className="font-semibold text-forest-900"><a href={`mailto:${booking.email}`} className="hover:text-forest-600 break-all">{booking.email}</a></p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-xs font-semibold text-forest-500 uppercase mb-3">Booking Details</h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-forest-500 mb-1">Cottage Type</p>
+                  <p className="font-semibold text-forest-900">{booking.cottageType}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-forest-500 mb-1">Check-in</p>
+                  <p className="font-semibold text-forest-900">{new Date(booking.checkIn).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-forest-500 mb-1">Check-out</p>
+                  <p className="font-semibold text-forest-900">{new Date(booking.checkOut).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-forest-100 pt-6 grid grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-xs font-semibold text-forest-500 uppercase mb-3">Financial</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-forest-600">Guests</span>
+                  <span className="font-semibold text-forest-900">{booking.guests} persons</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-forest-600">Nights</span>
+                  <span className="font-semibold text-forest-900">{nights}</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-forest-100">
+                  <span className="text-sm font-semibold text-forest-700">Total Amount</span>
+                  <span className="font-display text-lg text-forest-900">₹{(booking.amount || 0).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-xs font-semibold text-forest-500 uppercase mb-3">Status</h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-forest-500 mb-2">Booking Status</p>
+                  <StatusBadge status={booking.bookingStatus} type="booking" />
+                </div>
+                <div>
+                  <p className="text-xs text-forest-500 mb-2">Payment Status</p>
+                  <StatusBadge status={booking.paymentStatus} type="payment" />
+                </div>
+                {booking.notes && (
+                  <div className="pt-2 border-t border-forest-100">
+                    <p className="text-xs text-forest-500 mb-1">Special Requests</p>
+                    <p className="text-sm text-forest-700">{booking.notes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-forest-100 pt-4 text-xs text-forest-400 space-y-1">
+            <p>Created: {new Date(booking.createdAt).toLocaleString('en-IN')}</p>
+            {booking.updatedAt && <p>Updated: {new Date(booking.updatedAt).toLocaleString('en-IN')}</p>}
+            {booking.paymentId && <p>Payment ID: {booking.paymentId}</p>}
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
@@ -26,6 +147,7 @@ export default function AdminBookings() {
   const [filters, setFilters] = useState({ status: '', paymentStatus: '', date: '' });
   const [search, setSearch] = useState('');
   const [actionLoading, setActionLoading] = useState(null);
+  const [selectedBooking, setSelectedBooking] = useState(null);
   const limit = 15;
 
   const fetchBookings = useCallback(async () => {
@@ -36,8 +158,11 @@ export default function AdminBookings() {
       if (filters.paymentStatus) params.set('paymentStatus', filters.paymentStatus);
       if (filters.date) params.set('date', filters.date);
       const { data } = await api.get(`/bookings?${params}`);
-      setBookings(data.bookings);
-      setTotal(data.total);
+      setBookings(data.bookings || []);
+      setTotal(data.pagination?.total || data.total || 0);
+    } catch (error) {
+      toast.error('Failed to load bookings');
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -50,6 +175,9 @@ export default function AdminBookings() {
     try {
       await api.put(`/bookings/${id}/status`, { bookingStatus });
       setBookings(bs => bs.map(b => b.id === id ? { ...b, bookingStatus } : b));
+      toast.success(`Booking ${bookingStatus}`);
+    } catch (error) {
+      toast.error('Failed to update booking');
     } finally {
       setActionLoading(null);
     }
@@ -62,6 +190,9 @@ export default function AdminBookings() {
       await api.delete(`/bookings/${id}`);
       setBookings(bs => bs.filter(b => b.id !== id));
       setTotal(t => t - 1);
+      toast.success('Booking deleted');
+    } catch (error) {
+      toast.error('Failed to delete booking');
     } finally {
       setActionLoading(null);
     }
@@ -172,6 +303,13 @@ export default function AdminBookings() {
                     <td className="px-5 py-4"><StatusBadge status={b.bookingStatus} /></td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setSelectedBooking(b)}
+                          title="View details"
+                          className="w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg flex items-center justify-center transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
                         {b.bookingStatus === 'pending' && (
                           <>
                             <button
@@ -232,6 +370,11 @@ export default function AdminBookings() {
           </div>
         )}
       </div>
+
+      {/* Booking Details Modal */}
+      {selectedBooking && (
+        <BookingDetailsModal booking={selectedBooking} onClose={() => setSelectedBooking(null)} />
+      )}
     </div>
   );
 }

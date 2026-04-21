@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Loader2, LogIn } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
 import logo from '../../assets/logo.png';
 
@@ -9,20 +10,20 @@ export default function AdminLogin() {
   const [form, setForm] = useState({ username: '', password: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
     try {
       const { data } = await api.post('/auth/login', form);
       localStorage.setItem('balu_token', data.token);
       localStorage.setItem('balu_user', JSON.stringify(data.user));
+      toast.success('Login successful!');
       navigate('/admin');
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Check your credentials.');
+      const errorMsg = err.response?.data?.error || 'Login failed. Check your credentials.';
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -79,12 +80,6 @@ export default function AdminLogin() {
                 </button>
               </div>
             </div>
-
-            {error && (
-              <div className="bg-red-900/40 border border-red-700/50 text-red-300 text-sm px-4 py-3 rounded-xl">
-                {error}
-              </div>
-            )}
 
             <button
               type="submit"
